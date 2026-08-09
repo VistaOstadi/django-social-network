@@ -3,8 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <title>Social Network</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <style>
+        .jumbotron{
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #e9ecef;
+
+
+
+        }
+
+    </style>
 </head>
 <body>
-    <div>{% block content %}  {% endblock %}</div>
+    {% include "inc/navbar.html" %}
+    <div class="jumbotron">{% block content %}  {% endblock %}</div>
 </body>
 </html>
