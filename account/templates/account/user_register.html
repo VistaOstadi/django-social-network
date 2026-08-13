@@ -3,7 +3,7 @@
 {% block content %}
     <h2>User Register..!</h2>
 
-    <form action="" method="post" class="col-md-6">
+    <form action="" method="post" class="col-md-6" novalidate>
         {% csrf_token %}
         {{ form }}
         <input type="submit" value="Register" class="btn btn-info">
