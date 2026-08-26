@@ -6,6 +6,7 @@ app_name = "account"
 
 urlpatterns = [
     path("register/", views.UserRegisterView.as_view(), name="user_register"),
-    path("Login/", views.UserLoginView.as_view(), name="user_login")
+    path("Login/", views.UserLoginView.as_view(), name="user_login"),
+    path("logout/", views.UserLogoutView.as_view(), name="user_logout"),
 
 ]
