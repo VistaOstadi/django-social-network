@@ -9,6 +9,14 @@ from django.contrib.auth import authenticate, login, logout
 class UserRegisterView(View):
     form_class = UserRegisterForm
     template_name = "account/user_register.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            messages.info(request, "You are already logged in!", "info")
+            return redirect("home:home")
+        return super().dispatch(request, *args, **kwargs)
+
+
     def get(self, request):
         form = self.form_class()
         return render(request, self.template_name,{"form":form})
@@ -26,6 +34,12 @@ class UserRegisterView(View):
 class UserLoginView(View):
     form_class = UserLoginForm
     template_name = "account/user_login.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            messages.info(request, "You are already logged in!", "info")
+            return redirect("home:home")
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request):
         form = self.form_class()
@@ -49,4 +63,3 @@ class UserLogoutView(View):
         logout(request)
         messages.success(request, "Logout Successfully!", "success")
         return redirect("home:home")
-
