@@ -1,9 +1,12 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+from django.utils.decorators import method_decorator
 from django.views import View
 from .forms import UserRegisterForm, UserLoginForm
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 class UserRegisterView(View):
@@ -58,7 +61,9 @@ class UserLoginView(View):
         return render(request, self.template_name, {"form":form})
 
 
-class UserLogoutView(View):
+class UserLogoutView(LoginRequiredMixin, View):
+    #@method_decorator(login_required)
+    #login_url = "/account/login/"
     def get(self, request):
         logout(request)
         messages.success(request, "Logout Successfully!", "success")
