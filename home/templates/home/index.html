@@ -4,7 +4,7 @@
     <h3>Index Page..!</h3><br/>
     <div class="card">
         {% for post in posts %}
-            <a href="{% url 'home:post_detail' post.id post.slug %}" class="card-body">
+            <a href="{{ post.get_absolute_url }}" class="card-body">
                 {{ post.body|truncatewords:8 }}
             </a>
 
