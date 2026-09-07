@@ -1,13 +1,8 @@
 {% extends "base.html" %}
-
 {% block content %}
     <form action="" method="post" novalidate>
         {% csrf_token %}
-        {{ form }}<br>
-        <input type="submit" value="Update" class="btn btn-info">
-
-
-
+        {{ form }}
+        <input type="submit" value="Create" class="btn btn-info">
     </form>
-
 {% endblock %}

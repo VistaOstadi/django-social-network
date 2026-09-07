@@ -3,7 +3,8 @@ from django.views import View
 from .models import Post
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from .forms import PostUpdateForm
+from .forms import PostCreateUpdateForm
+from django.utils.text import slugify
 
 
 
@@ -31,19 +32,47 @@ class PostDeleteView(LoginRequiredMixin, View):
 
 
 class PostUpdateView(LoginRequiredMixin, View):
-    form_class = PostUpdateForm
+    form_class = PostCreateUpdateForm
+
+    def setup(self, request, *args, **kwargs):
+        self.post_instance = Post.objects.get(pk=kwargs["post_id"])
+        return super().setup(request, *args, **kwargs)
 
     def dispatch(self, request, *args, **kwargs):
-        post = Post.objects.get(pk=kwargs["post_id"])
+        post = self.post_instance
         if post.user.id != request.user.id:
             messages.error(request, "You can't update this post!", "danger")
             return redirect("home:home")
         return super().dispatch(request, *args, **kwargs)
 
-    def get(self, request, post_id):
-        post = Post.objects.get(pk=post_id)
+    def get(self, request, *args, **kwargs):
+        post = self.post_instance
         form = self.form_class(instance=post)
         return render(request, "home/update.html", {"form": form})
 
-    def post(self, request, post_id):
-        pass
+    def post(self, request, *args, **kwargs):
+        post = self.post_instance
+        form = self.form_class(request.POST, instance=post)
+        if form.is_valid():
+            updated_post = form.save(commit=False)
+            updated_post.slug = slugify(form.cleaned_data["body"][:30])
+            updated_post.save()
+            messages.success(request, "Post Updated Successfully!", "success")
+            return redirect("home:post_detail", updated_post.id, updated_post.slug)
+
+
+class PostCreateView(LoginRequiredMixin, View):
+    form_class = PostCreateUpdateForm
+
+    def get(self, request, *args, **kwargs):
+        return render(request, "home/create.html", {"form": self.form_class()})
+
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            new_post = form.save(commit=False)
+            new_post.slug = slugify(form.cleaned_data["body"][:30])
+            new_post.user = request.user
+            new_post.save()
+            messages.success(request, "Post Created Successfully!", "success")
+            return redirect("home:post_detail", new_post.id, new_post.slug)
