@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views import View
 from .forms import UserRegisterForm, UserLoginForm
@@ -73,6 +73,6 @@ class UserLogoutView(LoginRequiredMixin, View):
 
 class UserProfileView(LoginRequiredMixin, View):
     def get(self, request, user_id):
-        user = User.objects.get(pk=user_id)
+        user = get_object_or_404(User, pk=user_id)
         posts = Post.objects.filter(user=user)
         return render(request, "account/user_profile.html", {"user":user, "posts":posts})
