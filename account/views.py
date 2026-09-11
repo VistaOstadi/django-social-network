@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
-from home.models import Post
+from .models import Relation
 
 
 class UserRegisterView(View):
@@ -39,6 +39,11 @@ class UserLoginView(View):
     form_class = UserLoginForm
     template_name = "account/user_login.html"
 
+    def setup(self, request, *args, **kwargs):
+        self.next = request.GET.get("next")
+        return super().setup(request, *args, **kwargs)
+
+
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             messages.info(request, "You are already logged in!", "info")
@@ -57,6 +62,8 @@ class UserLoginView(View):
             if user is not None:
                 login(request, user)
                 messages.success(request, "Login Successfully!", "success")
+                if self.next:
+                    return redirect(self.next)
                 return redirect("home:home")
             messages.error(request, "username or password is wrong!", "warning")
         return render(request, self.template_name, {"form":form})
@@ -73,6 +80,35 @@ class UserLogoutView(LoginRequiredMixin, View):
 
 class UserProfileView(LoginRequiredMixin, View):
     def get(self, request, user_id):
+        is_following = False
         user = get_object_or_404(User, pk=user_id)
-        posts = Post.objects.filter(user=user)
-        return render(request, "account/user_profile.html", {"user":user, "posts":posts})
+        posts = user.posts.all()
+        relation = Relation.objects.filter(from_user=request.user, to_user=user)
+        if relation.exists():
+            is_following = True
+        return render(request, "account/user_profile.html", {"user":user, "posts":posts, "is_following":is_following})
+
+
+class UserFollowView(LoginRequiredMixin, View):
+    def get(self, request, user_id):
+        user = User.objects.get(pk=user_id)
+        relation = Relation.objects.filter(from_user=request.user, to_user=user)
+        if relation.exists():
+            messages.error(request, "You are already following this user!", "danger")
+        else:
+            #Relation.objects.create(from_user=request.user, to_user=user)
+            Relation(from_user=request.user, to_user=user).save()
+            messages.success(request, f"You are now following {user.username}!", "success")
+        return redirect("account:user_profile", user.id)
+
+
+class UserUnfollowView(LoginRequiredMixin, View):
+    def get(self, request, user_id):
+        user = User.objects.get(pk=user_id)
+        relation = Relation.objects.filter(from_user=request.user, to_user=user)
+        if relation.exists():
+            relation.delete()
+            messages.success(request, f"You unfollowed {user.username}!", "success")
+        else:
+            messages.error(request, f"You are not following {user.username}!", "danger")
+        return redirect("account:user_profile", user.id)
