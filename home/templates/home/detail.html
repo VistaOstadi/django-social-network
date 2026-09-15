@@ -6,8 +6,17 @@
         <a href="{% url 'home:post_update' post.id %}" class="btn btn-info">Update</a><br/><br/>
     {% endif %}
     <p><a href="{% url 'account:user_profile' post.user.id %}">{{ post.user.username }}</a> / {{ post.updated|date:"Y - M" }}</p><hr/>
-    <p>{{ post.body }}</p>
-    <p>{{ comments.count }} comments..!</p>
+    <p>{{ post.body }}</p><br/>
+    {% if request.user.is_authenticated %}
+        <form action="" method="post">
+            {% csrf_token %}
+            {{ form }}
+            <br/><input type="submit" value="Send" class="btn btn-primary">
+        </form>
+    {% else %}
+        <P class="alert alert-info">Only logged-in users can comment..!</P>
+    {% endif %}
+    <br/><p>{{ comments.count }} comments..!</p>
     {% for comment in comments %}
         <div class="card bg-dark text-white">
             <p class="card-header">{{ comment.user }} | {{ comment.created|timesince }}</p>
