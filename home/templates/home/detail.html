@@ -16,11 +16,19 @@
     {% else %}
         <P class="alert alert-info">Only logged-in users can comment..!</P>
     {% endif %}
-    <p>{{ comments.count }} comments..!</p>
     {% for comment in comments %}
         <div class="card bg-dark text-white">
             <p class="card-header">{{ comment.user }} | {{ comment.created|timesince }}</p>
             <p class="card-body">{{comment.body}}</p>
+
+            {% if request.user.is_authenticated %}
+                <form action="{% url 'home:add_reply' post.id comment.id %}" method="post" style="display: none;">
+                    {% csrf_token %}
+                    {{ reply_form }}
+                    <input class="m-2" type="submit" value="Send">
+                </form>
+            {% endif %}
+
             {% with replies=comment.rcomments.all %}
                 {% for reply in replies %}
                     <p class="bg-primary p-3 m-2">{{ reply.user }} <br/> {{ reply.body }}</p>
