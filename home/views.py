@@ -1,5 +1,3 @@
-from typing import Any
-
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
@@ -10,6 +8,7 @@ from .forms import PostCreateUpdateForm, CommentCreateForm, CommentReplyForm, Po
 from django.utils.text import slugify
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
+from django.views.generic import TemplateView
 
 
 
@@ -154,3 +153,12 @@ class PostLikeView(LoginRequiredMixin, View):
             Vote.objects.create(post=post, user=request.user)
             messages.success(request, "Liked Successfully!", "success")
         return redirect("home:post_detail", post.id, post.slug)
+
+
+class AboutView(TemplateView):
+    template_name = "home/about.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["user"] = self.request.user.username
+        return context
