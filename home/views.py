@@ -1,3 +1,6 @@
+from typing import Any
+
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from .models import Post, Comment, Vote
@@ -12,12 +15,24 @@ from django.contrib.auth.decorators import login_required
 
 class HomeView(View):
     form_class = PostSearchForm
+    http_method_names = ["get", "options"]
 
     def get(self, request):
         posts = Post.objects.all()
         if request.GET.get("search"):
             posts = posts.filter(body__icontains=request.GET["search"])
         return render(request, "home/index.html", {"posts": posts, "form": self.form_class()})
+
+    def options(self, request, *args, **kwargs):
+        response = super().options(request, *args, **kwargs)
+        response.headers["host"] = "localhost"
+        response.headers["user"] = request.user
+        return response
+
+    def http_method_not_allowed(self, request, *args, **kwargs):
+        super().http_method_not_allowed(request, *args, **kwargs)
+        return render(request, "method_not_allowed.html", status=405)
+
 
 
 class PostDetailView(View):
