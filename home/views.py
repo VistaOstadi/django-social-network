@@ -8,11 +8,35 @@ from .forms import PostCreateUpdateForm, CommentCreateForm, CommentReplyForm, Po
 from django.utils.text import slugify
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from django.views.generic import TemplateView, RedirectView
+from django.views.generic import TemplateView, RedirectView, ListView
+
+
+class HomeView(ListView):
+    form_class = PostSearchForm
+    template_name = "home/index.html"
+    #model = Post #object_list
+    #queryset = Post.objects.filter(id__lte=200)
+    # ordering = "created"
+    context_object_name = "posts"
+    allow_empty = True
+
+    def get_queryset(self):
+        result = Post.objects.all()
+        if self.request.GET.get("search"):
+            result = result.filter(body__icontains=self.request.GET["search"])
+        return result
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = self.form_class()
+        return context
 
 
 
-class HomeView(View):
+
+
+
+class Home2View(View):
     form_class = PostSearchForm
     http_method_names = ["get", "options"]
 
