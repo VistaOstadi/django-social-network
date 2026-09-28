@@ -8,7 +8,7 @@ from .forms import PostCreateUpdateForm, CommentCreateForm, CommentReplyForm, Po
 from django.utils.text import slugify
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, RedirectView
 
 
 
@@ -162,3 +162,18 @@ class AboutView(TemplateView):
         context = super().get_context_data(**kwargs)
         context["user"] = self.request.user.username
         return context
+
+
+class ContactView(RedirectView):
+    #url = "https://mongard.ir/"
+    # url = "/about/%(id)i/%(name)s/"
+    pattern_name = "home:about"
+    permanent = True
+    query_string = False
+
+    def get_redirect_url(self, *args, **kwargs):
+        print("="*90)
+        print(kwargs["id"], kwargs["name"])
+        kwargs.pop("id")
+        kwargs.pop("name")
+        return super().get_redirect_url(*args, **kwargs)
