@@ -1,3 +1,4 @@
+from django.db import models
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
@@ -8,7 +9,7 @@ from .forms import PostCreateUpdateForm, CommentCreateForm, CommentReplyForm, Po
 from django.utils.text import slugify
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from django.views.generic import TemplateView, RedirectView, ListView
+from django.views.generic import TemplateView, RedirectView, ListView, DetailView
 
 
 class HomeView(ListView):
@@ -33,9 +34,6 @@ class HomeView(ListView):
 
 
 
-
-
-
 class Home2View(View):
     form_class = PostSearchForm
     http_method_names = ["get", "options"]
@@ -55,6 +53,27 @@ class Home2View(View):
     def http_method_not_allowed(self, request, *args, **kwargs):
         super().http_method_not_allowed(request, *args, **kwargs)
         return render(request, "method_not_allowed.html", status=405)
+
+#
+# class PostDetailView(DetailView):
+#     model = Post #object | Post
+#     template_name = "home/detail.html"
+#     #context_object_name = "anything"
+#     pk_url_kwarg = "post_id"
+#     slug_url_kwarg = "post_slug"
+#     #slug_field = "body"
+#     #queryset = Post.objects.filter(id__lte=3)
+#
+#     def get_queryset(self):
+#         if self.request.user.is_staff:
+#             return Post.objects.filter(id=self.kwargs["post_id"])
+#         else:
+#             return Post.objects.none()
+#     context_object_name = "post"
+#     def get_object(self, queryset=None):
+#         return Post.objects.get(title = self.kwargs["title"])
+#     zamani ke nemikhay ba slug va id kar koni aslan
+
 
 
 
