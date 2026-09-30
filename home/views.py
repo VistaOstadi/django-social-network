@@ -10,7 +10,7 @@ from .forms import PostCreateUpdateForm, CommentCreateForm, CommentReplyForm, Po
 from django.utils.text import slugify
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from django.views.generic import TemplateView, RedirectView, ListView, DetailView, FormView, CreateView, DeleteView
+from django.views.generic import TemplateView, RedirectView, ListView, DetailView, FormView, CreateView, DeleteView, UpdateView
 from django.urls import reverse_lazy, reverse
 
 
@@ -137,7 +137,21 @@ class PostDelete2View(LoginRequiredMixin, View):
         return redirect("home:home")
 
 
-class PostUpdateView(LoginRequiredMixin, View):
+class PostUpdateView(LoginRequiredMixin, UpdateView):
+    model = Post
+    fields = ["body"]
+    success_url = reverse_lazy("home:home")
+    pk_url_kwarg = "post_id"
+
+    def form_valid(self, form):
+        if self.object.user.id != self.request.user.id:
+            messages.error(self.request, "You can't update this post!", "danger")
+            return redirect("home:home")
+        return super().form_valid(form)
+
+
+
+class PostUpdate2View(LoginRequiredMixin, View):
     form_class = PostCreateUpdateForm
 
     def setup(self, request, *args, **kwargs):
