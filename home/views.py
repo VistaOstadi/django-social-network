@@ -9,7 +9,8 @@ from .forms import PostCreateUpdateForm, CommentCreateForm, CommentReplyForm, Po
 from django.utils.text import slugify
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from django.views.generic import TemplateView, RedirectView, ListView, DetailView
+from django.views.generic import TemplateView, RedirectView, ListView, DetailView, FormView
+from django.urls import reverse_lazy
 
 
 class HomeView(ListView):
@@ -148,6 +149,27 @@ class PostUpdateView(LoginRequiredMixin, View):
             updated_post.save()
             messages.success(request, "Post Updated Successfully!", "success")
             return redirect("home:post_detail", updated_post.id, updated_post.slug)
+
+class PostCreate2View(LoginRequiredMixin, FormView):
+    template_name = "home/create.html"
+    form_class = PostCreateUpdateForm
+    #success_url = "/"
+    #success_url = reverse("home:home") ERROR
+    success_url = reverse_lazy("home:home")
+
+    def form_valid(self, form):
+        self._create_post(form)
+        return super().form_valid(form)
+
+    def _create_post(self, form):
+        post = form.save(commit=False)
+        post.slug = slugify(form.cleaned_data["body"][:30])
+        post.user = self.request.user
+        post.save()
+        messages.success(self.request, "Post Created Successfully!", "success")
+
+
+
 
 
 class PostCreateView(LoginRequiredMixin, View):
