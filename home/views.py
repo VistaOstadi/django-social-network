@@ -9,8 +9,8 @@ from .forms import PostCreateUpdateForm, CommentCreateForm, CommentReplyForm, Po
 from django.utils.text import slugify
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from django.views.generic import TemplateView, RedirectView, ListView, DetailView, FormView
-from django.urls import reverse_lazy
+from django.views.generic import TemplateView, RedirectView, ListView, DetailView, FormView, CreateView
+from django.urls import reverse_lazy, reverse
 
 
 class HomeView(ListView):
@@ -150,15 +150,38 @@ class PostUpdateView(LoginRequiredMixin, View):
             messages.success(request, "Post Updated Successfully!", "success")
             return redirect("home:post_detail", updated_post.id, updated_post.slug)
 
-class PostCreate2View(LoginRequiredMixin, FormView):
+
+
+
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
+    fields = ["body"]
     template_name = "home/create.html"
-    form_class = PostCreateUpdateForm
-    #success_url = "/"
-    #success_url = reverse("home:home") ERROR
-    success_url = reverse_lazy("home:home")
 
     def form_valid(self, form):
-        self._create_post(form)
+        form.instance.slug = slugify(form.cleaned_data["body"][:30])
+        form.instance.user = self.request.user
+
+        messages.success(self.request, "Post Created Successfully!", "success")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse(
+            "home:post_detail",
+            kwargs={
+                "post_id": self.object.id,
+                "post_slug": self.object.slug
+            }
+        )
+
+
+
+class PostCreate3View(LoginRequiredMixin, FormView):
+    template_name = "home/create.html"
+    form_class = PostCreateUpdateForm
+
+    def form_valid(self, form):
+        self.object = self._create_post(form)
         return super().form_valid(form)
 
     def _create_post(self, form):
@@ -167,12 +190,21 @@ class PostCreate2View(LoginRequiredMixin, FormView):
         post.user = self.request.user
         post.save()
         messages.success(self.request, "Post Created Successfully!", "success")
+        return post
+
+    def get_success_url(self):
+        return reverse("home:post_detail",
+                       kwargs={
+                           "post_id": self.object.id,
+                           "post_slug": self.object.slug
+                                                   }
+                       )
 
 
 
 
 
-class PostCreateView(LoginRequiredMixin, View):
+class PostCreate2View(LoginRequiredMixin, View):
     form_class = PostCreateUpdateForm
 
     def get(self, request, *args, **kwargs):
@@ -187,6 +219,8 @@ class PostCreateView(LoginRequiredMixin, View):
             new_post.save()
             messages.success(request, "Post Created Successfully!", "success")
             return redirect("home:post_detail", new_post.id, new_post.slug)
+
+
 
 
 class PostAddReplyView(LoginRequiredMixin, View):
