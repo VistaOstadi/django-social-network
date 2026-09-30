@@ -1,6 +1,7 @@
 from django.db import models
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.template.context_processors import request
 from django.views import View
 from .models import Post, Comment, Vote
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -9,7 +10,7 @@ from .forms import PostCreateUpdateForm, CommentCreateForm, CommentReplyForm, Po
 from django.utils.text import slugify
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from django.views.generic import TemplateView, RedirectView, ListView, DetailView, FormView, CreateView
+from django.views.generic import TemplateView, RedirectView, ListView, DetailView, FormView, CreateView, DeleteView
 from django.urls import reverse_lazy, reverse
 
 
@@ -110,7 +111,22 @@ class PostDetailView(View):
 
 
 
-class PostDeleteView(LoginRequiredMixin, View):
+class PostDeleteView(LoginRequiredMixin, DeleteView):
+    model = Post #<model>_confirm_delete.html
+    success_url = reverse_lazy("home:home")
+    template_name = "home/delete.html"
+    pk_url_kwarg = "post_id"
+
+    def form_valid(self, form):
+        if self.object.user.id != self.request.user.id:
+            messages.error(self.request, "You can't delete this post!", "danger")
+            return redirect("home:home")
+        return super().form_valid(form)
+
+
+
+
+class PostDelete2View(LoginRequiredMixin, View):
     def get(self, request, post_id):
         post = get_object_or_404(Post, pk=post_id)
         if post.user.id == request.user.id:
