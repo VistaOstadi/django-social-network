@@ -10,8 +10,19 @@ from .forms import PostCreateUpdateForm, CommentCreateForm, CommentReplyForm, Po
 from django.utils.text import slugify
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from django.views.generic import TemplateView, RedirectView, ListView, DetailView, FormView, CreateView, DeleteView, UpdateView
+from django.views.generic import TemplateView, RedirectView, ListView, DetailView, FormView, CreateView, DeleteView, UpdateView, MonthArchiveView
 from django.urls import reverse_lazy, reverse
+
+
+
+
+class MonthPostsView(MonthArchiveView):
+    model = Post
+    date_field = "created"
+    template_name = "home/index.html"
+    context_object_name = "posts"
+    #month_format = "%m"
+
 
 
 class HomeView(ListView):
